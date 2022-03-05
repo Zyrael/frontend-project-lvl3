@@ -1,3 +1,3 @@
-require('./styles.css');
+import './styles.css';
 
-require('bootstrap/dist/css/bootstrap.min.css');
+import 'bootstrap/dist/css/bootstrap.min.css';
