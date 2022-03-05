@@ -1,0 +1,1 @@
+(()=>{"use strict";const{body:o}=document;o.style.backgroundColor="orange"})();

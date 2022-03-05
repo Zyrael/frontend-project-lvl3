@@ -4,6 +4,9 @@
   "description": "[![Actions Status](https://github.com/Zyrael/frontend-project-lvl3/workflows/hexlet-check/badge.svg)](https://github.com/Zyrael/frontend-project-lvl3/actions)",
   "main": "index.js",
   "scripts": {
+    "webpack": "webpack",
+    "build": "webpack -d",
+    "prod": "webpack -p",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,16 +18,22 @@
   "bugs": {
     "url": "https://github.com/Zyrael/frontend-project-lvl3/issues"
   },
-  "type": "module",
   "homepage": "https://github.com/Zyrael/frontend-project-lvl3#readme",
   "devDependencies": {
     "@jest/globals": "^27.5.1",
+    "css-loader": "^6.7.0",
     "eslint": "^8.10.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jest": "^26.1.1",
+    "html-webpack-plugin": "^5.5.0",
     "jest": "^27.5.1",
     "jest-cli": "^27.5.1",
-    "webpack": "^5.70.0"
+    "mini-css-extract-plugin": "^2.6.0",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "bootstrap": "^5.1.3"
   }
 }
