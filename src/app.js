@@ -7,7 +7,7 @@ export default () => {
   const form = document.querySelector('.rss-form');
   const input = document.querySelector('#url-input');
   const feedback = document.querySelector('.feedback');
-  
+
   const state = onChange({
     url: '',
     form: {
@@ -31,7 +31,7 @@ export default () => {
       }
     }
   });
-  
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
