@@ -1,6 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+require('./styles.css');
 
-import './styles.css';
-
-const { body } = document;
-body.style.backgroundColor = 'orange';
+require('bootstrap/dist/css/bootstrap.min.css');
