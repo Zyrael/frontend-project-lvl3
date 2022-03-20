@@ -3,10 +3,13 @@ export default {
     posts: 'Посты',
     feeds: 'Фиды',
     button: 'Просмотр',
-    errors: {
-      validationError: 'Ссылка должна быть валидным URL',
-      networkError: 'Ошибка сети',
-      alreadyUsed: 'RSS уже существует',
+    feedback: {
+      finished: 'RSS успешно загружен',
+      errors: {
+        validationError: 'Ссылка должна быть валидным URL',
+        networkError: 'Ошибка сети',
+        alreadyUsed: 'RSS уже существует',
+      },
     },
   },
 };
