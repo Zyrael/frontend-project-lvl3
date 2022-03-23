@@ -95,18 +95,21 @@ export default () => {
 
       const postData = postsData.find((post) => post.id === id);
 
+      const browseCB = () => {
+        postData.status = 'read';
+        updateModal({ title, description, link });
+        renderPosts(posts);
+      };
+
       const a = document.createElement('a');
       a.href = link;
-      a.classList.add(postData.status === 'unread' ? 'fw-bold' : ('fw-normal', 'link-secondary'));
+      const classes = postData.status === 'unread' ? ['fw-bold'] : ['fw-normal', 'link-secondary'];
+      a.classList.add(...classes);
       a.target = '_blank';
       a.rel = 'noopener noreferer';
       a.textContent = title;
       a.dataset.id = id;
-      a.addEventListener('click', () => {
-        postData.status = 'read';
-        updateModal({ title, description, link });
-        renderPosts(posts);
-      });
+      a.addEventListener('click', browseCB);
       postEl.append(a);
 
       const browse = document.createElement('button');
@@ -114,11 +117,7 @@ export default () => {
       browse.dataset.bsToggle = 'modal';
       browse.dataset.bsTarget = '#modal';
       browse.textContent = i18nextInstance.t('browse');
-      browse.addEventListener('click', () => {
-        postData.status = 'read';
-        updateModal({ title, description, link });
-        renderPosts(posts);
-      });
+      browse.addEventListener('click', browseCB);
       postEl.append(browse);
     });
   };
