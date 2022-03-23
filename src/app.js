@@ -9,6 +9,7 @@ const schema = yup.string().url().required();
 
 export default () => {
   const usedUrls = [];
+  const postsData = [];
 
   const i18nextInstance = i18next.createInstance();
   i18nextInstance.init({
@@ -17,12 +18,17 @@ export default () => {
     resources: { ru },
   });
 
+  const { body } = document;
   const form = document.querySelector('.rss-form');
-  const input = document.querySelector('#url-input');
+  const input = form.querySelector('#url-input');
   const feedback = document.querySelector('.feedback');
   const submit = document.querySelector('button[type="submit"]');
   const postsEl = document.querySelector('.posts');
   const feedsEl = document.querySelector('.feeds');
+  const modal = document.querySelector('.modal');
+  const modalTitle = modal.querySelector('.modal-title');
+  const modalBody = modal.querySelector('.modal-body');
+  const fullArticle = modal.querySelector('.full-article');
 
   const getCard = (title) => {
     const card = document.createElement('div');
@@ -40,25 +46,25 @@ export default () => {
     return card;
   };
 
+  const updateModal = ({ title, description, link }) => {
+    modalTitle.textContent = title;
+    modalBody.innerHTML = description;
+    fullArticle.href = link;
+  };
+
   const renderFeeds = (feeds) => {
-    const postsCard = getCard(i18nextInstance.t('posts'));
     const feedsCard = getCard(i18nextInstance.t('feeds'));
 
-    postsEl.replaceChildren(postsCard);
     feedsEl.replaceChildren(feedsCard);
-
-    const postsUl = document.createElement('ul');
-    postsUl.classList.add('list-group', 'border-0', 'rounded-0');
-    postsCard.append(postsUl);
 
     const feedsUl = document.createElement('ul');
     feedsUl.classList.add('list-group', 'border-0', 'rounded-0');
     feedsCard.append(feedsUl);
 
-    feeds.forEach(({ feedTitle, feedDescription, items }) => {
+    feeds.forEach(({ feedTitle, feedDescription }) => {
       const feedEl = document.createElement('li');
       feedEl.classList.add('list-group-item', 'border-0', 'border-end-0');
-      feedsUl.append(feedEl);
+      feedsUl.prepend(feedEl);
 
       const feedTitleEl = document.createElement('h3');
       feedTitleEl.classList.add('h6', 'm-0');
@@ -69,26 +75,51 @@ export default () => {
       feedDescriptionEl.classList.add('m-0', 'small', 'text-black-50');
       feedDescriptionEl.textContent = feedDescription;
       feedEl.append(feedDescriptionEl);
+    });
+  };
 
-      items.forEach(({ title, link, id }) => {
-        const postEl = document.createElement('li');
-        postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-        postsUl.append(postEl);
+  const renderPosts = (posts) => {
+    const postsCard = getCard(i18nextInstance.t('posts'));
+    postsEl.replaceChildren(postsCard);
 
-        const a = document.createElement('a');
-        a.href = link;
-        a.classList.add('fw-bold');
-        a.target = '_blank';
-        a.rel = 'noopener noreferer';
-        a.textContent = title;
-        a.dataset.id = id;
-        postEl.append(a);
+    const postsUl = document.createElement('ul');
+    postsUl.classList.add('list-group', 'border-0', 'rounded-0');
+    postsCard.append(postsUl);
 
-        const button = document.createElement('button');
-        button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-        button.textContent = i18nextInstance.t('button');
-        postEl.append(button);
+    posts.forEach(({
+      title, description, link, id,
+    }) => {
+      const postEl = document.createElement('li');
+      postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+      postsUl.prepend(postEl);
+
+      const postData = postsData.find((post) => post.id === id);
+
+      const a = document.createElement('a');
+      a.href = link;
+      a.classList.add(postData.status === 'unread' ? 'fw-bold' : ('fw-normal', 'link-secondary'));
+      a.target = '_blank';
+      a.rel = 'noopener noreferer';
+      a.textContent = title;
+      a.dataset.id = id;
+      a.addEventListener('click', () => {
+        postData.status = 'read';
+        updateModal({ title, description, link });
+        renderPosts(posts);
       });
+      postEl.append(a);
+
+      const browse = document.createElement('button');
+      browse.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      browse.dataset.bsToggle = 'modal';
+      browse.dataset.bsTarget = '#modal';
+      browse.textContent = i18nextInstance.t('browse');
+      browse.addEventListener('click', () => {
+        postData.status = 'read';
+        updateModal({ title, description, link });
+        renderPosts(posts);
+      });
+      postEl.append(browse);
     });
   };
 
@@ -105,35 +136,48 @@ export default () => {
     feedback.textContent = i18nextInstance.t(`feedback.errors.${error}`);
   };
 
-  const renderLoop = (feeds) => {
+  const renderLoop = ({ feeds, posts }) => {
     renderFeeds(feeds);
+    renderPosts(posts);
     setTimeout(() => {
-      renderLoop(feeds);
+      renderFeeds(feeds);
+      renderPosts(posts);
     }, 5000);
+  };
+
+  const renderEmpty = () => {
+    input.classList.remove('is-invalid');
+    feedback.textContent = null;
   };
 
   const state = onChange({
     form: {
       status: 'ready for processing',
-      error: '',
+      error: null,
     },
-    feeds: [],
-  }, (path, value, prevValue) => {
-    if (prevValue.status === 'failed') {
-      input.classList.remove('is-invalid');
-      feedback.textContent = '';
-    }
+    container: {
+      currPostId: null,
+      feeds: [],
+      posts: [],
+    },
+  }, (path, value) => {
     if (path === 'form') {
       switch (value.status) {
         case 'failed':
+          renderEmpty();
+
           renderErrors(state.form.error);
           submit.disabled = false;
           break;
         case 'processing':
+          renderEmpty();
+
           submit.disabled = true;
           break;
         case 'finished':
-          renderLoop(state.feeds);
+          renderEmpty();
+
+          renderLoop(state.container);
           renderFinished();
           input.value = null;
           submit.disabled = false;
@@ -142,6 +186,11 @@ export default () => {
           break;
       }
     }
+  });
+
+  input.addEventListener('input', () => {
+    body.setAttribute('wfd-invisible', 'true');
+    modal.setAttribute('wfd-invisible', 'true');
   });
 
   form.addEventListener('submit', (e) => {
@@ -158,9 +207,15 @@ export default () => {
       })
       .then(({ data: { contents } }) => {
         usedUrls.push(url);
-        const parsedFeed = parser(contents);
-        state.feeds.unshift(parsedFeed);
-        state.form = { status: 'finished', error: '' };
+        try {
+          const { feed, posts } = parser(contents);
+          state.container.feeds.push(feed);
+          state.container.posts.push(...posts);
+          postsData.push(...posts.map(({ id }) => ({ id, status: 'unread' })));
+          state.form = { status: 'finished', error: null };
+        } catch {
+          throw new Error('not an RSS');
+        }
       })
       .catch((error) => {
         switch (error.message) {
@@ -173,8 +228,11 @@ export default () => {
           case 'already used':
             state.form = { status: 'failed', error: 'alreadyUsed' };
             break;
+          case 'not an RSS':
+            state.form = { status: 'failed', error: 'notAnRSS' };
+            break;
           default:
-            state.form = { status: 'failed', error: '' };
+            state.form = { status: 'failed', error: null };
             break;
         }
       });
