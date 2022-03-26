@@ -206,15 +206,11 @@ export default () => {
       })
       .then(({ data: { contents } }) => {
         usedUrls.push(url);
-        try {
-          const { feed, posts } = parser(contents);
-          state.container.feeds.push(feed);
-          state.container.posts.push(...posts);
-          postsData.push(...posts.map(({ id }) => ({ id, status: 'unread' })));
-          state.form = { status: 'finished', error: null };
-        } catch {
-          throw new Error('not an RSS');
-        }
+        const { feed, posts } = parser(contents);
+        state.container.feeds.push(feed);
+        state.container.posts.push(...posts);
+        postsData.push(...posts.map(({ id }) => ({ id, status: 'unread' })));
+        state.form = { status: 'finished', error: null };
       })
       .catch((error) => {
         switch (error.message) {
