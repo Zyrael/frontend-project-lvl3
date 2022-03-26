@@ -1,4 +1,4 @@
-name: run linter
+name: code style check
 
 on:
   push:
@@ -16,4 +16,6 @@ jobs:
         run: make install
       - name: linting
         run: make lint
+        with:
+          hexlet-id: ${{ secrets.HEXLET_ID }}
         
