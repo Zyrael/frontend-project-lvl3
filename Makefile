@@ -1,6 +1,6 @@
 install: 
 	npm ci
 lint: 
-	npx eslint .
+	npx eslint src
 lint-fix:
 	npx eslint --fix src
