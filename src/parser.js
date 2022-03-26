@@ -1,6 +1,6 @@
 import uniqueId from 'lodash/uniqueId';
 
-export default (response) => {
+export default (contents) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(response, 'text/xml');
   if (!doc.querySelector('rss')) throw new Error('not an RSS');
