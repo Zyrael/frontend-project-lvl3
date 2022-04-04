@@ -1,12 +1,9 @@
 export default (contents) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(contents, 'text/xml');
-  if (!doc.querySelector('rss')) throw new Error('not an RSS');
-
   const feedTitle = doc.querySelector('title').textContent;
   const feedDescription = doc.querySelector('description').textContent;
   const docItems = doc.querySelectorAll('item');
-
   const parsedFeed = { feedTitle, feedDescription };
   const parsedPosts = [];
 

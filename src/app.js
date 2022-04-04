@@ -7,9 +7,7 @@ import ru from './locales/ru.js';
 import parse from './parser.js';
 import {
   clearForm, renderFailed, renderFinished, renderContainer, updateModal,
-} from './render';
-
-const schema = yup.string().url().required();
+} from './view';
 
 export default () => {
   const i18n = i18next.createInstance();
@@ -19,70 +17,83 @@ export default () => {
     resources: { ru },
   });
 
-  const elements = {
-    form: document.querySelector('.rss-form'),
-    input: document.querySelector('#url-input'),
-    feedback: document.querySelector('.feedback'),
-    submit: document.querySelector('button[type="submit"]'),
-    postsEl: document.querySelector('.posts'),
-    feedsEl: document.querySelector('.feeds'),
-    modal: document.querySelector('.modal'),
-    modalTitle: document.querySelector('.modal-title'),
-    modalBody: document.querySelector('.modal-body'),
-    fullArticle: document.querySelector('.full-article'),
-  };
-
   const state = onChange({
     timerId: null,
     usedUrls: [],
-    loopStatus: 'ready for processing',
+    currPostId: null,
     form: {
       status: 'ready for processing',
       error: null,
     },
     container: {
-      currPostData: {
-        currPostId: null,
-      },
       feeds: [],
       posts: [],
     },
+    getUsedUrls() {
+      return this.usedUrls;
+    },
+    getFeeds() {
+      return this.container.feeds;
+    },
+    getPosts() {
+      return this.container.posts;
+    },
+    getFormError() {
+      return this.form.error;
+    },
+    getCurrPost(id) {
+      return this.container.posts.find((post) => post.id === id);
+    },
+    getTimer() {
+      return this.timerId;
+    },
+    setCurrPostId(id) {
+      this.currPostId = id;
+    },
+    setTimer(timer) {
+      this.timerId = timer;
+    },
   }, (path, value) => {
     if (path === 'form') {
-      clearForm(elements);
+      clearForm();
+      const submit = document.querySelector('button[type="submit"]');
       switch (value.status) {
         case 'failed':
-          renderFailed(value.error, i18n, elements);
+          renderFailed(state, i18n);
           break;
         case 'processing':
-          elements.submit.disabled = true;
+          submit.disabled = true;
           break;
         case 'finished':
-          renderFinished(i18n, elements);
-          renderContainer(i18n, state, elements);
-          clearTimeout(state.timerId);
+          renderFinished(i18n);
+          renderContainer(i18n, state);
           break;
         default:
           break;
       }
     }
-    if (path === 'container.currPostData.currPostId') {
-      const { container: { posts } } = state;
-      const currPost = posts.find(({ id }) => id === value);
+    if (path === 'currPostId') {
+      const currPost = state.getCurrPost(value);
       currPost.status = 'read';
-      renderContainer(i18n, state, elements);
-      updateModal(elements, currPost);
+      renderContainer(i18n, state);
+      updateModal(currPost);
     }
-  });
+  }, { details: true });
 
-  const { input, modal, form } = elements;
-
+  const input = document.querySelector('#url-input');
   input.addEventListener('input', () => {
+    const modal = document.querySelector('.modal');
+
     document.body.setAttribute('wfd-invisible', 'true');
     modal.setAttribute('wfd-invisible', 'true');
   });
 
   const getData = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`);
+  
+  const postAlreadyExists = (parsedPost) => {
+    const posts = state.getPosts();
+    return posts.find(({ pubDate }) => pubDate === parsedPost.pubDate);
+  };
 
   const loop = () => {
     Promise.all(state.usedUrls.map(getData))
@@ -92,28 +103,30 @@ export default () => {
         return acc;
       }, []))
       .then((parsedPosts) => {
-        const { container: { posts } } = state;
+        const posts = state.getPosts();
         parsedPosts.forEach((parsedPost) => {
-          if (!posts.find(({ pubDate }) => pubDate === parsedPost.pubDate)) {
+          if (!postAlreadyExists(parsedPost)) {
             posts.push({ ...parsedPost, id: uniqueId() });
           }
         });
       })
-      .then(() => renderContainer(i18n, state, elements))
+      .then(() => renderContainer(i18n, state))
       .then(() => {
-        state.timerId = setTimeout(loop, 5000);
+        state.setTimer(setTimeout(loop, 5000));
       });
   };
 
+  const usedUrls = state.getUsedUrls();
+  const urlSchema = yup.string().url().required();
+
+  const form = document.querySelector('.rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const formData = new FormData(form);
     const url = formData.get('url');
-    schema.validate(url)
+    urlSchema.validate(url)
       .then((validated) => {
-        if (state.usedUrls.includes(validated)) throw new Error('already used');
-
         state.form = { status: 'processing', error: null };
         return validated;
       })
@@ -128,6 +141,9 @@ export default () => {
         posts.push(...parsedPosts.map((parsedPost) => ({ ...parsedPost, id: uniqueId() })));
 
         state.form = { status: 'finished', error: null };
+      })
+      .then(() => {
+        clearTimeout(state.getTimer());
       })
       .then(loop)
       .catch((error) => {
