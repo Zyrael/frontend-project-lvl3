@@ -1,16 +1,18 @@
 export default {
   translation: {
-    posts: 'Посты',
-    feeds: 'Фиды',
-    browse: 'Просмотр',
-    feedback: {
-      finished: 'RSS успешно загружен',
+    form: {
       errors: {
-        validationError: 'Ссылка должна быть валидным URL',
+        notAUrl: 'Ссылка должна быть валидным URL',
+        urlIsAlreadyUsed: 'RSS уже существует',
         networkError: 'Ошибка сети',
-        alreadyUsed: 'RSS уже существует',
-        notAnRSS: 'Ресурс не содержит валидный RSS',
+        notAnXML: 'Ресурс не содержит валидный RSS',
       },
+      finished: 'RSS успешно загружен',
     },
+    container: {
+      feeds: 'Фиды',
+      posts: 'Посты',
+    },
+    browseButton: 'Просмотр',
   },
 };

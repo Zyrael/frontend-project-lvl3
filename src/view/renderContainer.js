@@ -4,108 +4,81 @@ const getCard = (title) => {
 
   const cardBody = document.createElement('div');
   cardBody.classList.add('card-body');
+  card.append(cardBody);
+
+  const ul = document.createElement('ul');
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+  card.append(ul);
 
   const cardTitle = document.createElement('div');
   cardTitle.classList.add('card-title', 'h4');
   cardTitle.textContent = title;
-
-  const ul = document.createElement('ul');
-  ul.classList.add('list-group', 'border-0', 'rounded-0');
-
   cardBody.append(cardTitle);
-  card.append(cardBody);
-  card.append(ul);
 
   return card;
 };
 
-const getFeedElement = ({ feedTitle, feedDescription }) => {
+
+const getFeedElement = ({ title, description }) => {
   const feedElement = document.createElement('li');
   feedElement.classList.add('list-group-item', 'border-0', 'border-end-0');
 
-  const title = document.createElement('h3');
-  title.classList.add('h6', 'm-0');
-  title.textContent = feedTitle;
+  const titleElement = document.createElement('h3');
+  titleElement.classList.add('h6', 'm-0');
+  titleElement.textContent = title;
 
-  const description = document.createElement('p');
-  description.classList.add('m-0', 'small', 'text-black-50');
-  description.textContent = feedDescription;
+  const descriptionElement = document.createElement('p');
+  descriptionElement.classList.add('m-0', 'small', 'text-black-50');
+  descriptionElement.textContent = description;
 
-  feedElement.append(title, description);
+  feedElement.append(titleElement, descriptionElement);
   return feedElement;
 };
 
-const updateModal = ({ title, description, link }) => {
-  const modalTitle = document.querySelector('.modal-title');
-  const modalBody = document.querySelector('.modal-body');
-  const fullArticle = document.querySelector('.full-article');
-
-  modalTitle.textContent = title;
-  modalBody.textContent = description;
-  fullArticle.setAttribute('href', link);
-};
-
-const getLinkElement = ({
-  title, status, link, id,
+const getPostElement = (state, {
+  title, link, id, isRead,
 }) => {
-  const linkElement = document.createElement('a');
-  const linkClasses = (status === 'read') ? ['fw-normal', 'link-secondary'] : ['fw-bold'];
-  linkElement.classList.add(...linkClasses);
-  linkElement.setAttribute('href', link);
-  linkElement.setAttribute('target', '_blank');
-  linkElement.setAttribute('rel', 'noopener noreferer');
-  linkElement.setAttribute('data-id', id);
-  linkElement.textContent = title;
-  return linkElement;
-};
-
-const getBrowseButton = (i18n) => {
-  const browseButton = document.createElement('button');
-  browseButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-  browseButton.setAttribute('data-bs-toggle', 'modal');
-  browseButton.setAttribute('data-bs-target', '#modal');
-  browseButton.textContent = i18n.t('browse');
-  return browseButton;
-};
-
-const getBrowseCB = (state, id) => () => {
-  const currPost = state.getCurrPost(id);
-
-  state.setCurrPostId(id);
-  updateModal(currPost);
-};
-
-const getPostElement = (i18n, state, post) => {
   const postElement = document.createElement('li');
   postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
-  const linkElement = getLinkElement(post);
-  linkElement.addEventListener('click', getBrowseCB(state, post.id));
-  const browseButton = getBrowseButton(i18n);
-  browseButton.addEventListener('click', getBrowseCB(state, post.id));
-  postElement.append(linkElement, browseButton);
+  const browseCB = () => {
+    state.setCurrentId(id);
+  };
+
+  const linkElement = document.createElement('a');
+  const classes = (isRead === 'true') ? ['fw-normal', 'link-secondary'] : ['fw-bold'];
+  linkElement.classList.add(...classes);
+  linkElement.href = link;
+  linkElement.target = '_blank';
+  linkElement.rel = 'noopener noreferer';
+  linkElement.textContent = title;
+  linkElement.dataset.id = id;
+  linkElement.addEventListener('click', browseCB);
+  postElement.append(linkElement);
+
+  const browseButton = document.createElement('button');
+  browseButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+  browseButton.dataset.bsToggle = 'modal';
+  browseButton.dataset.bsTarget = '#modal';
+  browseButton.textContent = state.getText('browseButton');
+  browseButton.addEventListener('click', browseCB);
+  postElement.append(browseButton);
 
   return postElement;
 };
 
-const renderContainer = (i18n, state) => {
-  const feedsContainer = document.querySelector('.feeds');
-  const postsContainer = document.querySelector('.posts');
-
-  const feedsCard = getCard(i18n.t('feeds'));
-  const postsCard = getCard(i18n.t('posts'));
-
-  feedsContainer.replaceChildren(feedsCard);
-  postsContainer.replaceChildren(postsCard);
-
+export default (state) => {
+  const feedsElement = document.querySelector('.feeds');
+  const feedsCard = getCard(state.getText('container.feeds'));
   const feedsList = feedsCard.querySelector('ul');
+  const postsElement = document.querySelector('.posts');
+  const postsCard = getCard(state.getText('container.posts'));
   const postsList = postsCard.querySelector('ul');
+  const { feeds, posts } = state.getContainerData();
 
-  const feeds = state.getFeeds();
-  const posts = state.getPosts();
+  feedsElement.replaceChildren(feedsCard);
+  postsElement.replaceChildren(postsCard);
 
   feedsList.append(...feeds.map(getFeedElement));
-  postsList.append(...posts.map((post) => getPostElement(i18n, state, post)));
+  postsList.append(...posts.map((post) => getPostElement(state, post)));
 };
-
-export { renderContainer, updateModal };
