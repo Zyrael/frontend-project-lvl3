@@ -1,7 +1,7 @@
 import i18next from 'i18next';
-import { uniqueId } from 'lodash/uniqueId';
-import view from './view';
-import ru from './locales';
+import _ from 'lodash';
+import view from './view/index.js';
+import ru from './locales/index.js';
 
 export default () => {
   const i18n = i18next.createInstance();
@@ -35,10 +35,10 @@ export default () => {
       },
       setContainerData({ title, description, children }) {
         this.container.feeds.unshift({ title, description });
-        this.container.posts.unshift(...children.map((child) => ({ ...child, id: uniqueId() })));
+        this.container.posts.unshift(...children.map((child) => ({ ...child, id: _.uniqueId() })));
       },
       addNewPosts(newPosts) {
-        this.container.posts.unshift(...newPosts);
+        this.container.posts.unshift(...newPosts.map((child) => ({ ...child, id: _.uniqueId() })));
       },
       getContainerData() {
         return this.container;

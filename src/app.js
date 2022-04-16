@@ -1,7 +1,7 @@
 import init from './init.js';
 import {
   validate, errorHandling, getData, parseXML, update,
-} from './util';
+} from './util/index.js';
 
 export default () => {
   init().then((state) => {
