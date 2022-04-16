@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash/uniqueId';
 import view from './view';
 import ru from './locales';
 
