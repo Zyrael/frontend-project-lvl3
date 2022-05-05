@@ -18,7 +18,6 @@ const getCard = (title) => {
   return card;
 };
 
-
 const getFeedElement = ({ title, description }) => {
   const feedElement = document.createElement('li');
   feedElement.classList.add('list-group-item', 'border-0', 'border-end-0');

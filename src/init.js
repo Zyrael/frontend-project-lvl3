@@ -46,9 +46,6 @@ export default () => {
       getText(key) {
         return i18n.t(key);
       },
-      getStatus() {
-        return this.form;
-      },
       getFormError() {
         return this.formError;
       },
