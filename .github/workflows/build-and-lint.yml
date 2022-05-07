@@ -1,0 +1,21 @@
+name: build and lint
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+
+jobs:
+  install-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: building
+        run: make install
+      - name: linting
+        run: make lint-fix
+      - name: run webpack
+        run: npm run webpack
