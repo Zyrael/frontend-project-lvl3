@@ -6,7 +6,6 @@ const clearForm = () => {
   feedback.textContent = null;
 };
 
-
 const renderFormFailed = (state) => {
   clearForm();
   const input = document.querySelector('#url-input');
