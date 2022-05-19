@@ -1,6 +1,6 @@
 import onChange from 'on-change';
 import {
-  clearForm, renderFormFailed, renderFormProcessing, renderFormFinished,
+  renderFormFailed, renderFormProcessing, renderFormFinished,
 } from './renderForm.js';
 import renderContainer from './renderContainer.js';
 import updateModal from './updateModal.js';
@@ -8,7 +8,6 @@ import updateModal from './updateModal.js';
 export default (state) => {
   const watchedState = onChange(state, (path, value) => {
     if (path === 'status') {
-      clearForm();
       switch (value) {
         case 'failed':
           renderFormFailed(watchedState);
@@ -24,7 +23,7 @@ export default (state) => {
           renderContainer(watchedState);
           break;
         default:
-          clearForm();
+          break;
       }
     }
     if (path === 'currentId') {

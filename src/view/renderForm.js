@@ -6,7 +6,9 @@ const clearForm = () => {
   feedback.textContent = null;
 };
 
+
 const renderFormFailed = (state) => {
+  clearForm();
   const input = document.querySelector('#url-input');
   input.classList.add('is-invalid');
 
@@ -21,11 +23,13 @@ const renderFormFailed = (state) => {
 };
 
 const renderFormProcessing = () => {
+  clearForm();
   const submit = document.querySelector('button[type="submit"]');
   submit.disabled = true;
 };
 
 const renderFormFinished = (state) => {
+  clearForm();
   const input = document.querySelector('#url-input');
   input.value = null;
   input.focus();
